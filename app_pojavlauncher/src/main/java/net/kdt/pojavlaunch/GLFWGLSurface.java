@@ -224,7 +224,7 @@ public class GLFWGLSurface extends View implements GrabListener {
                 @Override
                 public void onLongPress(MotionEvent e) {
                     super.onLongPress(e);
-                    CallbackBridge.putMouseEventWithCoords(LwjglGlfwKeycode.GLFW_MOUSE_BUTTON_RIGHT, CallbackBridge.mouseX, CallbackBridge.mouseY);
+                    delayedClick(LwjglGlfwKeycode.GLFW_MOUSE_BUTTON_RIGHT, CallbackBridge.mouseX, CallbackBridge.mouseY);
                 }
             });
 
@@ -232,6 +232,13 @@ public class GLFWGLSurface extends View implements GrabListener {
         }
     }
 
+
+    // FastLane: the game builds its click options from where the cursor was on the previous frames,
+    // so put the cursor on the spot, then click a moment later.
+    private void delayedClick(int button, float x, float y) {
+        CallbackBridge.sendCursorPos(x, y);
+        mHandler.postDelayed(() -> CallbackBridge.putMouseEventWithCoords(button, x, y), 90);
+    }
 
     /**
      * The touch event for both grabbed an non-grabbed mouse state on the touch screen
@@ -264,7 +271,8 @@ public class GLFWGLSurface extends View implements GrabListener {
             CallbackBridge.mouseY = (e.getY() * mScaleFactor);
             //One android click = one MC click
             if(mSingleTapDetector.onTouchEvent(e)){ //
-                CallbackBridge.putMouseEventWithCoords(LwjglGlfwKeycode.GLFW_MOUSE_BUTTON_LEFT, CallbackBridge.mouseX, CallbackBridge.mouseY);
+                // FastLane: move the cursor first, click a moment later (the game needs the cursor over the button first)
+                delayedClick(LwjglGlfwKeycode.GLFW_MOUSE_BUTTON_LEFT, CallbackBridge.mouseX, CallbackBridge.mouseY);
                 return true;
             }
         }

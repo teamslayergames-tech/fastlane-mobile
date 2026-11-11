@@ -154,11 +154,9 @@ public class JavaGUILauncherActivity extends BaseActivity implements View.OnTouc
             float x = event.getX();
             float y = event.getY();
             if (mGestureDetector.onTouchEvent(event)) {
-                sendScaledMousePosition(x + mTextureView.getX(), y);
-                AWTInputBridge.sendMousePress(AWTInputEvent.BUTTON1_DOWN_MASK);
-                if(rcState) {
-                    clearRC();
-                }
+                // FastLane: move the cursor first and click a moment later, so the game sees the cursor
+                // over the button before the click (otherwise taps on buttons like Logout or a window's X miss)
+                tapAt(x + mTextureView.getX(), y, false);
                 return true;
             }
 
@@ -185,9 +183,8 @@ public class JavaGUILauncherActivity extends BaseActivity implements View.OnTouc
         longPressDetector = new GestureDetector(this, new GestureDetector.SimpleOnGestureListener() {
             @Override
             public void onLongPress(MotionEvent e) {
-                // Send RightClick
-                AWTInputBridge.sendKey((char)AWTInputEvent.VK_F11,AWTInputEvent.VK_F11);
-                AWTInputBridge.sendMousePress(AWTInputEvent.BUTTON1_DOWN_MASK);
+                // Send RightClick (FastLane: at the pressed spot, after the cursor has moved there)
+                tapAt(e.getX() + mTextureView.getX(), e.getY(), true);
                 super.onLongPress(e);
             }
 
@@ -343,6 +340,20 @@ public class JavaGUILauncherActivity extends BaseActivity implements View.OnTouc
         rcState = true;
         findViewById(R.id.mb2).setBackground(getResources().getDrawable( R.drawable.control_button_pressed ));
         AWTInputBridge.sendKey((char)AWTInputEvent.VK_F11,AWTInputEvent.VK_F11);
+    }
+
+    // FastLane: delayed tap - the game builds its click options from where the cursor was on the previous
+    // frames, so the cursor has to sit on the spot briefly before the click.
+    private static final int TAP_DELAY_MS = 90;
+    private final android.os.Handler mTapHandler = new android.os.Handler(android.os.Looper.getMainLooper());
+    private void tapAt(float x, float y, boolean rightClick) {
+        sendScaledMousePosition(x, y);
+        mTapHandler.postDelayed(() -> {
+            sendScaledMousePosition(x, y);
+            if (rightClick) AWTInputBridge.sendKey((char)AWTInputEvent.VK_F11,AWTInputEvent.VK_F11);
+            AWTInputBridge.sendMousePress(AWTInputEvent.BUTTON1_DOWN_MASK);
+            if (!rightClick && rcState) clearRC();
+        }, TAP_DELAY_MS);
     }
 
     @SuppressWarnings("SuspiciousNameCombination")

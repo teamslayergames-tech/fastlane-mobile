@@ -1,0 +1,10 @@
+{
+    "ip_management": "practically-weblogs.tun.ply.gg",
+    "ip_address": "practically-weblogs.tun.ply.gg",
+    "world": 1,
+    "server_port": 64806,
+    "wl_port": 64807,
+    "js5_port": 64807,
+    "mouseWheelZoom": true,
+    "pluginsFolder": "plugins"
+}

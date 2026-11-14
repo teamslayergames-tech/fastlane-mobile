@@ -236,6 +236,13 @@ public class ControlButton extends TextView implements ControlInterface {
             case ControlData.SPECIALBTN_MENU:
                 mControlLayout.notifyAppMenu();
                 break;
+            // FastLane: these reach the FastLaneMobile in-game add-on, which runs the command
+            case ControlData.SPECIALBTN_FASTLANE_FE:
+                if (isDown) net.kdt.pojavlaunch.AWTInputBridge.sendKey((char) 0, 0xF002 /* VK_F15 */);
+                break;
+            case ControlData.SPECIALBTN_FASTLANE_COMMANDS:
+                if (isDown) net.kdt.pojavlaunch.AWTInputBridge.sendKey((char) 0, 0xF003 /* VK_F16 */);
+                break;
         }
     }
 

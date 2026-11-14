@@ -95,7 +95,15 @@ public class AsyncAssetManager {
                 Tools.copyAssetFile(ctx,"config.json",Tools.DIR_DATA, updated);
                 try { java.nio.file.Files.write(flVer.toPath(), nowVer.getBytes()); } catch (Exception ignored) {}
 
-                // Unzip the plugins for use.
+                // FastLane: new on-screen buttons (FE, commands) - refresh the controls layout on app updates
+                if (updated) Tools.copyAssetFile(ctx, "default.json", Tools.CTRLMAP_PATH, true);
+                // Unzip the plugins for use (FastLane's own add-ons are refreshed on app updates)
+                if (updated) {
+                    for (String own : new String[]{"FastLaneMobile", "BetterShiftDrop", "XPDropPlugin"}) {
+                        File d = new File(Tools.DIR_DATA + "/plugins/" + own);
+                        if (d.exists()) FileUtils.deleteDirectory(d);
+                    }
+                }
                 extractAllPlugins(ctx);
 
             } catch (IOException e) {

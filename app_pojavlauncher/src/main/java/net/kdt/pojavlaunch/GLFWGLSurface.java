@@ -224,7 +224,10 @@ public class GLFWGLSurface extends View implements GrabListener {
                 @Override
                 public void onLongPress(MotionEvent e) {
                     super.onLongPress(e);
-                    delayedClick(LwjglGlfwKeycode.GLFW_MOUSE_BUTTON_RIGHT, CallbackBridge.mouseX, CallbackBridge.mouseY);
+                    // FastLane: holding still = right-click when you let go; holding then dragging = drag (move items)
+                    mFlLongPressed = true;
+                    mFlLpX = CallbackBridge.mouseX; mFlLpY = CallbackBridge.mouseY;
+                    performHapticFeedback(android.view.HapticFeedbackConstants.LONG_PRESS);
                 }
             });
 
@@ -232,6 +235,22 @@ public class GLFWGLSurface extends View implements GrabListener {
         }
     }
 
+
+    // FastLane touch state: one-finger drags are sent as drag markers (F13 start / F14 end) to the FastLaneMobile
+    // add-on, which decides in-game whether a drag turns the camera, scrolls a window or moves the world map.
+    private boolean mFlLongPressed, mFlHoldDrag, mFlDragMarker;
+    private float mFlLpX, mFlLpY, mFlDownX, mFlDownY;
+    private void flResetTouch() { mFlLongPressed = false; mFlHoldDrag = false; mFlDragMarker = false; }
+    private void flEndTouch() {
+        if (mFlHoldDrag) {
+            CallbackBridge.sendCursorPos(CallbackBridge.mouseX, CallbackBridge.mouseY);
+            sendMouseButton(LwjglGlfwKeycode.GLFW_MOUSE_BUTTON_LEFT, false);
+        } else if (mFlLongPressed) {
+            delayedClick(LwjglGlfwKeycode.GLFW_MOUSE_BUTTON_RIGHT, mFlLpX, mFlLpY);
+        }
+        if (mFlDragMarker) AWTInputBridge.sendKey((char) 0, AWTInputEvent.VK_F14);
+        flResetTouch();
+    }
 
     // FastLane: the game builds its click options from where the cursor was on the previous frames,
     // so put the cursor on the spot, then click a moment later.
@@ -271,6 +290,8 @@ public class GLFWGLSurface extends View implements GrabListener {
             CallbackBridge.mouseY = (e.getY() * mScaleFactor);
             //One android click = one MC click
             if(mSingleTapDetector.onTouchEvent(e)){ //
+                // FastLane: a quick flick that already started a drag is a drag, not a tap
+                if (mFlDragMarker || mFlHoldDrag) { flEndTouch(); return true; }
                 // FastLane: move the cursor first, click a moment later (the game needs the cursor over the button first)
                 delayedClick(LwjglGlfwKeycode.GLFW_MOUSE_BUTTON_LEFT, CallbackBridge.mouseX, CallbackBridge.mouseY);
                 return true;
@@ -287,12 +308,7 @@ public class GLFWGLSurface extends View implements GrabListener {
                 float dx = (e.getX()) - startX;
                 float dy = (e.getY()) - startY;
 
-                // Do something with dx and dy here, like adjusting the camera position
-                try {
-                    panCamera(dx, dy);
-                } catch (InterruptedException ex) {
-                    throw new RuntimeException(ex);
-                }
+                // FastLane: no more arrow-key camera here - the FastLaneMobile add-on handles drags in-game
 
                 // Update start position
                 startX = e.getX();
@@ -306,6 +322,17 @@ public class GLFWGLSurface extends View implements GrabListener {
 
                     // Touch hover
                     if(pointerCount == 1){
+                        float flMoved = MathUtils.dist(mFlDownX, mFlDownY, e.getX(), e.getY());
+                        if (mFlLongPressed) {
+                            if (!mFlHoldDrag && flMoved > FINGER_STILL_THRESHOLD) {   // hold, then drag: press where you held
+                                mFlHoldDrag = true;
+                                CallbackBridge.sendCursorPos(mFlLpX, mFlLpY);
+                                sendMouseButton(LwjglGlfwKeycode.GLFW_MOUSE_BUTTON_LEFT, true);
+                            }
+                        } else if (!mFlDragMarker && flMoved > FINGER_STILL_THRESHOLD) {
+                            mFlDragMarker = true;
+                            AWTInputBridge.sendKey((char) 0, AWTInputEvent.VK_F13);
+                        }
                         CallbackBridge.sendCursorPos(CallbackBridge.mouseX, CallbackBridge.mouseY);
                         mPrevX =  e.getX();
                         mPrevY =  e.getY();
@@ -354,6 +381,7 @@ public class GLFWGLSurface extends View implements GrabListener {
             case MotionEvent.ACTION_DOWN: // 0
                 startX = e.getX();
                 startY = e.getY();
+                flResetTouch(); mFlDownX = e.getX(); mFlDownY = e.getY();
                 hudKeyHandled = handleGuiBar((int)e.getX(), (int) e.getY());
                 boolean isTouchInHotbar = hudKeyHandled != -1;
                 if (isTouchInHotbar) {
@@ -387,8 +415,10 @@ public class GLFWGLSurface extends View implements GrabListener {
                 // End of drag, reset the start position
                 startX = 0;
                 startY = 0;
+                flEndTouch();
                 break;
             case MotionEvent.ACTION_CANCEL: // 3
+                flEndTouch();
                 mShouldBeDown = false;
                 mCurrentPointerID = -1;
 

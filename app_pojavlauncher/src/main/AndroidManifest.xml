@@ -84,5 +84,6 @@
             android:screenOrientation="sensorLandscape" />
 
         <service android:name=".services.ProgressService" />
+        <service android:name=".services.GameKeepAliveService" android:exported="false" />
     </application>
 </manifest>

@@ -64,6 +64,7 @@ public class JavaGUILauncherActivity extends BaseActivity implements View.OnTouc
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        net.kdt.pojavlaunch.services.GameKeepAliveService.start(this, JavaGUILauncherActivity.class); // FastLane: stay logged in when minimised
         setContentView(R.layout.activity_java_gui_launcher);
 
         try {
@@ -411,5 +412,11 @@ public class JavaGUILauncherActivity extends BaseActivity implements View.OnTouc
     }
     public void toggleKeyboard(View view) {
         mTouchCharInput.switchKeyboardState();
+    }
+
+    @Override
+    protected void onDestroy() {
+        net.kdt.pojavlaunch.services.GameKeepAliveService.stop(this);
+        super.onDestroy();
     }
 }

@@ -104,6 +104,8 @@ android {
         versionCode getDateSeconds()
         versionName getVersionName()
         multiDexEnabled true //important
+        // FastLane: the GitHub Actions run number = this APK's build number (releases are tagged build-<number>)
+        buildConfigField "int", "FL_BUILD", (System.getenv("GITHUB_RUN_NUMBER") ?: "0")
     }
 
     buildTypes {

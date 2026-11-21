@@ -96,10 +96,22 @@ public class AsyncAssetManager {
                 try { java.nio.file.Files.write(flVer.toPath(), nowVer.getBytes()); } catch (Exception ignored) {}
 
                 // FastLane: new on-screen buttons (FE, commands) - refresh the controls layout on app updates
-                if (updated) Tools.copyAssetFile(ctx, "default.json", Tools.CTRLMAP_PATH, true);
+                if (updated) {
+                    Tools.copyAssetFile(ctx, "default.json", Tools.CTRLMAP_PATH, true);
+                    // and switch back to it, in case an older custom layout (without the FE / DROP buttons) was selected
+                    try {
+                        android.preference.PreferenceManager.getDefaultSharedPreferences(ctx).edit().putString("defaultCtrl", Tools.CTRLDEF_FILE).apply();
+                        net.kdt.pojavlaunch.prefs.LauncherPreferences.PREF_DEFAULTCTRL_PATH = Tools.CTRLDEF_FILE;
+                    } catch (Throwable ignored) {}
+                }
                 // Unzip the plugins for use (FastLane's own add-ons are refreshed on app updates)
                 if (updated) {
-                    for (String own : new String[]{"FastLaneMobile", "BetterShiftDrop", "XPDropPlugin"}) {
+                    // FastLaneLogin replaces 2009Scape's RememberMyLogin (which forgot logins after logging out)
+                    for (String old : new String[]{"RememberMyLogin"}) {
+                        File d = new File(Tools.DIR_DATA + "/plugins/" + old);
+                        if (d.exists()) FileUtils.deleteDirectory(d);
+                    }
+                    for (String own : new String[]{"FastLaneMobile", "BetterShiftDrop", "XPDropPlugin", "FastLaneLogin"}) {
                         File d = new File(Tools.DIR_DATA + "/plugins/" + own);
                         if (d.exists()) FileUtils.deleteDirectory(d);
                     }

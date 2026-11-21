@@ -83,6 +83,7 @@ public class MainActivity extends BaseActivity implements ControlButtonMenuListe
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        net.kdt.pojavlaunch.services.GameKeepAliveService.start(this, MainActivity.class); // FastLane: stay logged in when minimised
         initLayout(R.layout.activity_basemain);
         CallbackBridge.addGrabListener(touchpad);
         CallbackBridge.addGrabListener(minecraftGLView);
@@ -246,6 +247,7 @@ public class MainActivity extends BaseActivity implements ControlButtonMenuListe
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        net.kdt.pojavlaunch.services.GameKeepAliveService.stop(this);
         CallbackBridge.removeGrabListener(touchpad);
         CallbackBridge.removeGrabListener(minecraftGLView);
     }

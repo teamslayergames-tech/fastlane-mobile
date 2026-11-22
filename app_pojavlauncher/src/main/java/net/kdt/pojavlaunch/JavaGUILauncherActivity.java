@@ -83,6 +83,8 @@ public class JavaGUILauncherActivity extends BaseActivity implements View.OnTouc
         findViewById(R.id.keyboard).setOnTouchListener(this);
         findViewById(R.id.camera).setOnTouchListener(this);
         findViewById(R.id.mb2).setOnTouchListener(this);
+        setupFastLaneButtons();
+        FL_STILL_PX = Tools.dpToPx(9);
 
         mTouchPad = findViewById(R.id.main_touchpad);
         mLoggerView = findViewById(R.id.launcherLoggerView);
@@ -154,25 +156,49 @@ public class JavaGUILauncherActivity extends BaseActivity implements View.OnTouc
             longPressDetector.onTouchEvent(event);
             float x = event.getX();
             float y = event.getY();
+            float sx = x + mTextureView.getX();
+            if (event.getActionMasked() == MotionEvent.ACTION_DOWN) {
+                flResetTouch(); mFlDownX = x; mFlDownY = y;
+            }
             if (mGestureDetector.onTouchEvent(event)) {
+                // FastLane: a quick flick that already started a drag is a drag, not a tap
+                if (mFlDragMarker || mFlHoldDrag) { flEndTouch(sx, y); return true; }
+                flResetTouch();
                 // FastLane: move the cursor first and click a moment later, so the game sees the cursor
                 // over the button before the click (otherwise taps on buttons like Logout or a window's X miss)
-                tapAt(x + mTextureView.getX(), y, false);
+                tapAt(sx, y, false);
                 return true;
             }
 
             switch (event.getActionMasked()) {
                 case MotionEvent.ACTION_UP: // 1
                 case MotionEvent.ACTION_CANCEL: // 3
+                    flEndTouch(sx, y);
+                    break;
+                case MotionEvent.ACTION_POINTER_DOWN: // 5: a second finger = pinch zoom, so stop any one-finger drag
+                    if (mFlDragMarker) { AWTInputBridge.sendKey((char) 0, AWTInputEvent.VK_F14); mFlDragMarker = false; }
+                    mFlMultiTouch = true;
+                    break;
                 case MotionEvent.ACTION_POINTER_UP: // 6
                     break;
                 case MotionEvent.ACTION_MOVE: // 2
-                    sendScaledMousePosition(x + mTextureView.getX(), y);
-                    try {
-                        panCamera(prevX-x, prevY-y);
-                    } catch (InterruptedException e) {
-                        throw new RuntimeException(e);
+                    // FastLane: one-finger drags go to the FastLaneMobile add-on (F13 start / F14 end), which turns the
+                    // camera over the world, scrolls windows / the side panel / chat, and drags the world map.
+                    // Hold still first, then drag = drag an item (left button held down from where you held).
+                    if (event.getPointerCount() == 1 && !mFlMultiTouch) {
+                        float moved = MathUtils.dist(mFlDownX, mFlDownY, x, y);
+                        if (mFlLongPressed) {
+                            if (!mFlHoldDrag && moved > FL_STILL_PX) {
+                                mFlHoldDrag = true;
+                                sendScaledMousePosition(mFlLpX, mFlLpY);
+                                AWTInputBridge.sendMousePress(AWTInputEvent.BUTTON1_DOWN_MASK, true);
+                            }
+                        } else if (!mFlDragMarker && moved > FL_STILL_PX) {
+                            mFlDragMarker = true;
+                            AWTInputBridge.sendKey((char) 0, AWTInputEvent.VK_F13);
+                        }
                     }
+                    sendScaledMousePosition(sx, y);
                     break;
             }
 
@@ -184,9 +210,11 @@ public class JavaGUILauncherActivity extends BaseActivity implements View.OnTouc
         longPressDetector = new GestureDetector(this, new GestureDetector.SimpleOnGestureListener() {
             @Override
             public void onLongPress(MotionEvent e) {
-                // Send RightClick (FastLane: at the pressed spot, after the cursor has moved there)
-                tapAt(e.getX() + mTextureView.getX(), e.getY(), true);
-                super.onLongPress(e);
+                // FastLane: holding still = right-click when you let go; holding then dragging = drag (move items)
+                if (mFlDragMarker || mFlMultiTouch) return;
+                mFlLongPressed = true;
+                mFlLpX = e.getX() + mTextureView.getX(); mFlLpY = e.getY();
+                mTextureView.performHapticFeedback(android.view.HapticFeedbackConstants.LONG_PRESS);
             }
 
             @Override
@@ -341,6 +369,34 @@ public class JavaGUILauncherActivity extends BaseActivity implements View.OnTouc
         rcState = true;
         findViewById(R.id.mb2).setBackground(getResources().getDrawable( R.drawable.control_button_pressed ));
         AWTInputBridge.sendKey((char)AWTInputEvent.VK_F11,AWTInputEvent.VK_F11);
+    }
+
+    // FastLane touch state for the SD screen (same behaviour as the HD screen)
+    private float FL_STILL_PX = 24;   // set from the screen density in onCreate
+    private boolean mFlLongPressed, mFlHoldDrag, mFlDragMarker, mFlMultiTouch;
+    private float mFlLpX, mFlLpY, mFlDownX, mFlDownY;
+    private boolean mFlDropOn = false;
+    private void flResetTouch() { mFlLongPressed = false; mFlHoldDrag = false; mFlDragMarker = false; mFlMultiTouch = false; }
+    private void flEndTouch(float x, float y) {
+        if (mFlHoldDrag) {
+            sendScaledMousePosition(x, y);
+            AWTInputBridge.sendMousePress(AWTInputEvent.BUTTON1_DOWN_MASK, false);
+        } else if (mFlLongPressed) {
+            tapAt(mFlLpX, mFlLpY, true);
+        }
+        if (mFlDragMarker) AWTInputBridge.sendKey((char) 0, AWTInputEvent.VK_F14);
+        flResetTouch();
+    }
+
+    // FastLane: FE / CMDS / DROP buttons (FE and CMDS reach the FastLaneMobile add-on; DROP holds Shift for shift-drop)
+    private void setupFastLaneButtons() {
+        findViewById(R.id.flFe).setOnClickListener(b -> AWTInputBridge.sendKey((char) 0, AWTInputEvent.VK_F15));
+        findViewById(R.id.flCmds).setOnClickListener(b -> AWTInputBridge.sendKey((char) 0, AWTInputEvent.VK_F16));
+        findViewById(R.id.flDrop).setOnClickListener(b -> {
+            mFlDropOn = !mFlDropOn;
+            AWTInputBridge.sendKey((char) 0, AWTInputEvent.VK_SHIFT, mFlDropOn ? 1 : 0);
+            b.setBackground(getResources().getDrawable(mFlDropOn ? R.drawable.control_button_pressed : R.drawable.control_button_normal));
+        });
     }
 
     // FastLane: delayed tap - the game builds its click options from where the cursor was on the previous

@@ -53,6 +53,54 @@
 			android:layout_width="match_parent"
 			android:layout_height="match_parent">
 
+
+			<!-- FastLane: FE / CMDS / DROP buttons (same as on the HD screen) -->
+			<LinearLayout
+				android:id="@+id/flBar"
+				android:layout_width="wrap_content"
+				android:layout_height="wrap_content"
+				android:orientation="horizontal"
+				android:layout_marginTop="2dp"
+				app:layout_constraintTop_toTopOf="parent"
+				app:layout_constraintStart_toStartOf="parent"
+				app:layout_constraintEnd_toEndOf="parent">
+				<Button
+					android:id="@+id/flDrop"
+					android:layout_width="64dp"
+					android:layout_height="30dp"
+					android:layout_marginEnd="4dp"
+					android:minWidth="0dp"
+					android:minHeight="0dp"
+					android:padding="0dp"
+					android:text="DROP"
+					android:textColor="#FFFFFF"
+					android:textSize="12sp"
+					android:background="@drawable/control_button_normal" />
+				<Button
+					android:id="@+id/flFe"
+					android:layout_width="64dp"
+					android:layout_height="30dp"
+					android:layout_marginEnd="4dp"
+					android:minWidth="0dp"
+					android:minHeight="0dp"
+					android:padding="0dp"
+					android:text="FE"
+					android:textColor="#FFFFFF"
+					android:textSize="12sp"
+					android:background="@drawable/control_button" />
+				<Button
+					android:id="@+id/flCmds"
+					android:layout_width="64dp"
+					android:layout_height="30dp"
+					android:minWidth="0dp"
+					android:minHeight="0dp"
+					android:padding="0dp"
+					android:text="CMDS"
+					android:textColor="#FFFFFF"
+					android:textSize="12sp"
+					android:background="@drawable/control_button" />
+			</LinearLayout>
+
 			<FrameLayout
 				android:id="@+id/keyboardFrame"
 				android:layout_width="wrap_content"

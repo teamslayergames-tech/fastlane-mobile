@@ -54,135 +54,153 @@
 			android:layout_height="match_parent">
 
 
-			<!-- FastLane: FE / CMDS / DROP buttons (same as on the HD screen) -->
+			<!-- FastLane: all buttons in one column in the black space left of the game (sized to fit it in code) -->
 			<LinearLayout
-				android:id="@+id/flBar"
-				android:layout_width="wrap_content"
+				android:id="@+id/flPanel"
+				android:layout_width="120dp"
 				android:layout_height="wrap_content"
-				android:orientation="horizontal"
-				android:layout_marginTop="2dp"
-				app:layout_constraintTop_toTopOf="parent"
-				app:layout_constraintStart_toStartOf="parent"
-				app:layout_constraintEnd_toEndOf="parent">
+				android:orientation="vertical"
+				android:layout_marginStart="2dp"
+				android:layout_marginBottom="2dp"
+				app:layout_constraintBottom_toBottomOf="parent"
+				app:layout_constraintStart_toStartOf="parent">
 				<Button
 					android:id="@+id/flDrop"
-					android:layout_width="64dp"
-					android:layout_height="30dp"
-					android:layout_marginEnd="4dp"
+					android:layout_width="match_parent"
+					android:layout_height="40dp"
+					android:layout_marginBottom="3dp"
 					android:minWidth="0dp"
 					android:minHeight="0dp"
 					android:padding="0dp"
 					android:text="DROP"
 					android:textColor="#FFFFFF"
-					android:textSize="12sp"
+					android:textSize="13sp"
+					android:textStyle="bold"
+					android:stateListAnimator="@null"
 					android:background="@drawable/control_button_normal" />
 				<Button
 					android:id="@+id/flFe"
-					android:layout_width="64dp"
-					android:layout_height="30dp"
-					android:layout_marginEnd="4dp"
+					android:layout_width="match_parent"
+					android:layout_height="40dp"
+					android:layout_marginBottom="3dp"
 					android:minWidth="0dp"
 					android:minHeight="0dp"
 					android:padding="0dp"
 					android:text="FE"
 					android:textColor="#FFFFFF"
-					android:textSize="12sp"
-					android:background="@drawable/control_button" />
+					android:textSize="13sp"
+					android:textStyle="bold"
+					android:stateListAnimator="@null"
+							android:background="@drawable/control_button" />
 				<Button
 					android:id="@+id/flCmds"
-					android:layout_width="64dp"
-					android:layout_height="30dp"
+					android:layout_width="match_parent"
+					android:layout_height="40dp"
+					android:layout_marginBottom="3dp"
 					android:minWidth="0dp"
 					android:minHeight="0dp"
 					android:padding="0dp"
 					android:text="CMDS"
 					android:textColor="#FFFFFF"
-					android:textSize="12sp"
-					android:background="@drawable/control_button" />
+					android:textSize="13sp"
+					android:textStyle="bold"
+					android:stateListAnimator="@null"
+							android:background="@drawable/control_button" />
+				<LinearLayout
+					android:id="@+id/flRow1"
+					android:layout_width="match_parent"
+					android:layout_height="60dp"
+					android:layout_marginTop="6dp"
+					android:orientation="horizontal">
+					<FrameLayout
+						android:id="@+id/mouseModeFrame"
+						android:layout_width="0dp"
+						android:layout_height="match_parent"
+						android:layout_weight="1">
+						<Button
+							android:id="@+id/mouseMode"
+							android:layout_width="match_parent"
+							android:layout_height="match_parent"
+							android:minWidth="0dp"
+							android:minHeight="0dp"
+							android:stateListAnimator="@null"
+							android:background="@drawable/control_button" />
+						<ImageView
+						android:id="@+id/mouseModeIco"
+							android:layout_width="20dp"
+							android:layout_height="20dp"
+							android:layout_gravity="center"
+							android:scaleType="fitCenter"
+							android:src="@drawable/touch" />
+					</FrameLayout>
+					<FrameLayout
+						android:id="@+id/cameraFrame"
+						android:layout_width="0dp"
+						android:layout_height="match_parent"
+						android:layout_weight="1">
+						<Button
+							android:id="@+id/camera"
+							android:layout_width="match_parent"
+							android:layout_height="match_parent"
+							android:minWidth="0dp"
+							android:minHeight="0dp"
+							android:stateListAnimator="@null"
+							android:background="@drawable/control_button" />
+						<ImageView
+							android:layout_width="20dp"
+							android:layout_height="20dp"
+							android:layout_gravity="center"
+							android:scaleType="fitCenter"
+							android:src="@drawable/ic_camera" />
+					</FrameLayout>
+				</LinearLayout>
+				<LinearLayout
+					android:id="@+id/flRow2"
+					android:layout_width="match_parent"
+					android:layout_height="60dp"
+					android:orientation="horizontal">
+					<FrameLayout
+						android:id="@+id/keyboardFrame"
+						android:layout_width="0dp"
+						android:layout_height="match_parent"
+						android:layout_weight="1">
+						<Button
+							android:id="@+id/keyboard"
+							android:layout_width="match_parent"
+							android:layout_height="match_parent"
+							android:minWidth="0dp"
+							android:minHeight="0dp"
+							android:stateListAnimator="@null"
+							android:background="@drawable/control_button" />
+						<ImageView
+							android:layout_width="20dp"
+							android:layout_height="20dp"
+							android:layout_gravity="center"
+							android:scaleType="fitCenter"
+							android:src="@drawable/ic_keyboard" />
+					</FrameLayout>
+					<FrameLayout
+						android:id="@+id/mb2Frame"
+						android:layout_width="0dp"
+						android:layout_height="match_parent"
+						android:layout_weight="1">
+						<Button
+							android:id="@+id/mb2"
+							android:layout_width="match_parent"
+							android:layout_height="match_parent"
+							android:minWidth="0dp"
+							android:minHeight="0dp"
+							android:stateListAnimator="@null"
+							android:background="@drawable/control_button" />
+						<ImageView
+							android:layout_width="20dp"
+							android:layout_height="20dp"
+							android:layout_gravity="center"
+							android:scaleType="fitCenter"
+							android:src="@drawable/ic_mouse2" />
+					</FrameLayout>
+				</LinearLayout>
 			</LinearLayout>
-
-			<FrameLayout
-				android:id="@+id/keyboardFrame"
-				android:layout_width="wrap_content"
-				android:layout_height="wrap_content"
-				app:layout_constraintBottom_toBottomOf="parent"
-				app:layout_constraintStart_toStartOf="parent">
-				<ImageView
-					android:layout_width="20dp"
-					android:layout_height="20dp"
-					android:layout_gravity="center"
-					android:scaleType="fitCenter"
-					android:src="@drawable/ic_keyboard" />
-				<Button
-					android:id="@+id/keyboard"
-					android:layout_width="wrap_content"
-					android:layout_height="wrap_content"
-					android:background="@drawable/control_button" />
-
-			</FrameLayout>
-
-			<FrameLayout
-				android:id="@+id/mb2Frame"
-				android:layout_width="wrap_content"
-				android:layout_height="wrap_content"
-				app:layout_constraintBottom_toBottomOf="parent"
-				app:layout_constraintStart_toEndOf="@id/keyboardFrame">
-				<ImageView
-					android:layout_width="20dp"
-					android:layout_height="20dp"
-					android:layout_gravity="center"
-					android:scaleType="fitCenter"
-					android:src="@drawable/ic_mouse2" />
-				<Button
-					android:id="@+id/mb2"
-					android:layout_width="wrap_content"
-					android:layout_height="wrap_content"
-					android:background="@drawable/control_button" />
-			</FrameLayout>
-
-			<FrameLayout
-				android:id="@+id/mouseModeFrame"
-				android:layout_width="wrap_content"
-				android:layout_height="wrap_content"
-				app:layout_constraintBottom_toTopOf="@id/keyboardFrame"
-				app:layout_constraintStart_toStartOf="@id/keyboardFrame">
-
-				<ImageView
-					android:id="@+id/mouseModeIco"
-					android:layout_width="20dp"
-					android:layout_height="20dp"
-					android:layout_gravity="center"
-					android:scaleType="fitCenter"
-					android:src="@drawable/touch" />
-
-				<Button
-					android:id="@+id/mouseMode"
-					android:layout_width="wrap_content"
-					android:layout_height="wrap_content"
-					android:background="@drawable/control_button" />
-			</FrameLayout>
-
-			<FrameLayout
-				android:id="@+id/cameraFrame"
-				android:layout_width="wrap_content"
-				android:layout_height="wrap_content"
-				app:layout_constraintBottom_toTopOf="@id/mb2Frame"
-				app:layout_constraintStart_toStartOf="@id/mb2Frame">
-
-				<ImageView
-					android:layout_width="20dp"
-					android:layout_height="20dp"
-					android:layout_gravity="center"
-					android:scaleType="fitCenter"
-					android:src="@drawable/ic_camera" />
-
-				<Button
-					android:id="@+id/camera"
-					android:layout_width="wrap_content"
-					android:layout_height="wrap_content"
-					android:background="@drawable/control_button" />
-			</FrameLayout>
-
 
 		</androidx.constraintlayout.widget.ConstraintLayout>
 

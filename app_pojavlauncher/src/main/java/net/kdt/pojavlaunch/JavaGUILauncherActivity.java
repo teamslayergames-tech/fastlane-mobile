@@ -90,6 +90,8 @@ public class JavaGUILauncherActivity extends BaseActivity implements View.OnTouc
         mLoggerView = findViewById(R.id.launcherLoggerView);
         mMousePointerImageView = findViewById(R.id.main_mouse_pointer);
         mTextureView = findViewById(R.id.installmod_surfaceview);
+        // FastLane: fit the button column into the black space left of the game, whenever the layout changes
+        mTextureView.addOnLayoutChangeListener((v, l, t, r, b, ol, ot, or, ob) -> v.post(this::fitFastLanePanel));
         scaleGestureDetector = new ScaleGestureDetector(this, new ScaleListener());
         mGestureDetector = new GestureDetector(this, new SingleTapConfirm());
         mTouchPad.setFocusable(false);
@@ -386,6 +388,35 @@ public class JavaGUILauncherActivity extends BaseActivity implements View.OnTouc
         }
         if (mFlDragMarker) AWTInputBridge.sendKey((char) 0, AWTInputEvent.VK_F14);
         flResetTouch();
+    }
+
+    /** FastLane: size the button column (DROP / FE / CMDS + the 2x2 control grid) to the black space left of the game. */
+    private void fitFastLanePanel() {
+        View panel = findViewById(R.id.flPanel);
+        View root = (View) panel.getParent();
+        if (panel == null || root == null || root.getHeight() == 0) return;
+        float gap = Tools.dpToPx(4);
+        float space = mTextureView.getX() - gap * 1.5f;                  // width of the black bar on the left
+        int w = (int) Math.max(Tools.dpToPx(64), Math.min(space, Tools.dpToPx(170)));
+        int cell = w / 2;                                                  // grid buttons are square
+        int btnH = (int) Math.max(Tools.dpToPx(30), Math.min(cell * 0.7f, Tools.dpToPx(52)));
+        int gaps = (int) (Tools.dpToPx(3) * 2 + Tools.dpToPx(6) + Tools.dpToPx(4));
+        int need = btnH * 3 + cell * 2 + gaps;
+        int avail = root.getHeight() - (int) Tools.dpToPx(4);
+        if (need > avail) {                                                // short screen: shrink everything to fit
+            float k = (float) (avail - gaps) / (btnH * 3 + cell * 2);
+            btnH = (int) (btnH * k); cell = (int) (cell * k); w = cell * 2;
+        }
+        ViewGroup.LayoutParams pp = panel.getLayoutParams();
+        if (pp.width != w) { pp.width = w; panel.setLayoutParams(pp); }
+        for (int id : new int[]{R.id.flDrop, R.id.flFe, R.id.flCmds}) {
+            View b = findViewById(id); ViewGroup.LayoutParams lp = b.getLayoutParams();
+            if (lp.height != btnH) { lp.height = btnH; b.setLayoutParams(lp); }
+        }
+        for (int id : new int[]{R.id.flRow1, R.id.flRow2}) {
+            View row = findViewById(id); ViewGroup.LayoutParams lp = row.getLayoutParams();
+            if (lp.height != cell) { lp.height = cell; row.setLayoutParams(lp); }
+        }
     }
 
     // FastLane: FE / CMDS / DROP buttons (FE and CMDS reach the FastLaneMobile add-on; DROP holds Shift for shift-drop)
